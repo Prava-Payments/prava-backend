@@ -9,10 +9,15 @@ const app = express();
 const ALCHEMY_KEY = process.env.ALCHEMY_KEY;
 console.log('ALCHEMY_KEY:', ALCHEMY_KEY);
 
-const PRIVATE_KEY = process.env.PRIVATE_KEY
+const PRIVATE_KEY = process.env.PRIVATE_KEY;
 console.log('PRIVATE_KEY:', PRIVATE_KEY);
-const wallet =  new Wallet(PRIVATE_KEY)
-console.log('Wallet address:', wallet.address)
+let wallet: Wallet;
+if (PRIVATE_KEY) {
+  wallet = new Wallet(PRIVATE_KEY);
+  console.log('Wallet address:', wallet.address);
+} else {
+  console.error('Private key is undefined');
+}
 
 const provider = new ethers.JsonRpcProvider(`https://polygon-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`);
 
