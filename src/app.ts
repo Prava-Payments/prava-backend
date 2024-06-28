@@ -102,7 +102,7 @@ app.post('/api/send', (req: Request, res: Response) => {
 });
 
 // Define the port to run the server on
-const port = 3000;
+const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
