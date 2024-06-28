@@ -9,7 +9,7 @@ const app = express();
 const ALCHEMY_KEY = process.env.ALCHEMY_KEY;
 console.log('ALCHEMY_KEY:', ALCHEMY_KEY);
 
-const PRIVATE_KEY = process.env.PRIVATE_KEY || "0x";
+const PRIVATE_KEY = process.env.PRIVATE_KEY || "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359";
 console.log('PRIVATE_KEY:', PRIVATE_KEY);
 const wallet =  new Wallet(PRIVATE_KEY)
 console.log('Wallet address:', wallet.address)
