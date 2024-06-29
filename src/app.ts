@@ -1,7 +1,6 @@
 import express, { Request, Response } from 'express';
 import {ethers, formatEther, Wallet, type TransactionRequest} from 'ethers';
 import dotenv from 'dotenv';
-import { format } from 'path';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -34,7 +33,7 @@ const constructTx = async () => {
     const tokenAddress = "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359"
     const recipient = "0x6B2eBFe3FE5c5B84746105421de93Df383b222E8"
 
-    const amount = ethers.parseUnits('1', 6)
+    const amount = 1000
     // in other case you get it from the sms
     const nonce = await provider.getTransactionCount(wallet.address, 'latest');
     const gasPrice = 40000000000
@@ -54,15 +53,60 @@ const constructTx = async () => {
     gasPrice: gasPrice,
     gasLimit: gasLimit,
     to: tokenAddress,
-    value: 0,
+    value: ethers.parseEther('0'),
     data: data,
-    chainId: 137 // Replace with your chain ID
+    chainId: ethers.toBeHex(137) // Replace with your chain ID
     }
     const signedTx = await wallet.signTransaction(tx);
     console.log('Signed Transaction:', signedTx);
     return signedTx as TransactionRequest
 }
 
+const constructTx1 = async () => {
+    const gasPrice = 40000000000
+    const gasLimit = 315320
+
+    const erc20Address = '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359';
+    const erc20Abi = [
+        "function transfer(address recipient, uint256 amount) public returns (bool)"
+    ];
+    const contract = new ethers.Contract(erc20Address, erc20Abi);
+    const recipient = "0x6B2eBFe3FE5c5B84746105421de93Df383b222E8"
+    const amount = ethers.parseUnits('0.001', 6);
+    const data = contract.interface.encodeFunctionData('transfer', [recipient, amount]);
+    console.log('data:', data);
+    const tx = {
+    from: wallet.address,
+    nonce: await provider.getTransactionCount(wallet.address, 'latest'),
+    gasPrice: gasPrice,
+    gasLimit: gasLimit,
+    to: erc20Address,
+    value: ethers.parseEther('0'),
+    data: data,
+    chainId: ethers.toBeHex(137) // Replace with your chain ID
+    }
+    const signedTx = await wallet.signTransaction(tx);
+    console.log('Signed Transaction:', signedTx);
+    return signedTx as TransactionRequest
+}
+
+const constructTx2 = async () => {
+    const gasPrice = 40000000000
+    const gasLimit = 31532
+    const nonce = await provider.getTransactionCount(wallet.address, 'latest');
+    const tx = {
+        to: '0x6B2eBFe3FE5c5B84746105421de93Df383b222E8',
+        value: ethers.parseEther('0.001'),
+        gasLimit: gasLimit,
+        gasPrice: gasPrice,
+        nonce: nonce,
+        chainId: 137
+    };
+    // Sign the transaction
+    const signedTx = await wallet.signTransaction(tx);
+    console.log('Signed Transaction:', signedTx);
+    return signedTx as TransactionRequest
+}
 async function getRevertReason(txHash: string) {
     const tx = await provider.getTransaction(txHash);
     try {
@@ -83,7 +127,7 @@ app.use(express.json());
 
 // Define a GET endpoint
 app.get('/api/hello', async (req: Request, res: Response) => {
-    const signedTx = await constructTx();
+    const signedTx = await constructTx1();
     try {
         const txResponse = await provider.send("eth_sendRawTransaction", [signedTx]);
         console.log("Transaction Hash:", txResponse);
@@ -103,8 +147,7 @@ app.get('/api/hello', async (req: Request, res: Response) => {
     res.send('Hello, World!');
 });
 
-// Define a POST endpoint
-app.post('/api/send', async (req: Request, res: Response) => {
+const update = async (req: Request) => {
     const Tokens = [
         {
             USDC : {
@@ -119,11 +162,18 @@ app.post('/api/send', async (req: Request, res: Response) => {
     }
     const receivedData = req.body;
     const address = receivedData.address;
+    const nonce = await provider.getTransactionCount(address, 'latest');
     const NativeBalance = await provider.getBalance(address);
     Balance.ETH = formatEther(NativeBalance);
     const tokenBalance = await getBalance(address, Tokens[0].USDC.address);
     Balance.USDC = ethers.formatUnits(tokenBalance, Tokens[0].USDC.decimals);
-    res.json({ address: address, balance: Balance});
+    return {address, Balance, nonce}
+}
+
+// Define a POST endpoint
+app.post('/api/send', async (req: Request, res: Response) => {
+    const { address, Balance, nonce} = await update(req)
+    res.json({ address: address, balance: Balance, nonce: nonce });
 });
 
 // Define the port to run the server on
