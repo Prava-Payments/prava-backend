@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
-import {ethers, Wallet, type TransactionRequest} from 'ethers';
+import {ethers, formatEther, Wallet, type TransactionRequest} from 'ethers';
 import dotenv from 'dotenv';
+import { format } from 'path';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -17,6 +18,14 @@ if (PRIVATE_KEY) {
   console.log('Wallet address:', wallet.address);
 } else {
   console.error('Private key is undefined');
+}
+const getBalance = async (address: string, tokenAddress: string) => {
+    const tokenContract = new ethers.Contract(tokenAddress, [
+        'function balanceOf(address) view returns (uint)'
+    ], provider);
+
+    const balance = await tokenContract.balanceOf(address);
+    return balance;
 }
 
 const provider = new ethers.JsonRpcProvider(`https://polygon-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`);
@@ -95,10 +104,26 @@ app.get('/api/hello', async (req: Request, res: Response) => {
 });
 
 // Define a POST endpoint
-app.post('/api/send', (req: Request, res: Response) => {
-  const receivedData = req.body;
-  // Process the received data here
-  res.json({ message: 'Data received', data: receivedData });
+app.post('/api/send', async (req: Request, res: Response) => {
+    const Tokens = [
+        {
+            USDC : {
+                address: "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+                decimals: 6
+            }
+        },
+    ]
+    const Balance = {
+        ETH: '',
+        USDC : ''
+    }
+    const receivedData = req.body;
+    const address = receivedData.address;
+    const NativeBalance = await provider.getBalance(address);
+    Balance.ETH = formatEther(NativeBalance);
+    const tokenBalance = await getBalance(address, Tokens[0].USDC.address);
+    Balance.USDC = ethers.formatUnits(tokenBalance, Tokens[0].USDC.decimals);
+    res.json({ address: address, balance: Balance});
 });
 
 // Define the port to run the server on
