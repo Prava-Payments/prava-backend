@@ -185,19 +185,6 @@ const safeConstructTx = async (saltNonce: string) => {
         console.error('Error:', error);
     }
 }
-async function getRevertReason(txHash: string) {
-    const tx = await provider.getTransaction(txHash);
-    try {
-        // Perform a call to get the revert reason
-        const code = await provider.call(tx as TransactionRequest);
-        // Extract the reason string from the returned data
-        const reason = ethers.toUtf8String('0x' + code.substr(138));
-        return reason;
-    } catch (error) {
-        console.error("Error getting revert reason:", error);
-        return "Error getting revert reason";
-    }
-}
 
 const update = async (address: string) => {
     if(address === undefined) {
@@ -327,7 +314,7 @@ app.post('/api/instructions', async (req: Request, res: Response) => {
             // Safe Part
             const amountInWei = ethers.parseEther("0")
             const safeTransactionData: MetaTransactionData = {
-                to: destination,
+                to: tokenAddress,
                 data: dataTx,
                 value: amountInWei.toString(),
               }
