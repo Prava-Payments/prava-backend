@@ -10,11 +10,11 @@ import { createClient } from 'redis'
 dotenv.config();
 const ALCHEMY_KEY = process.env.ALCHEMY_KEY;
 console.log('ALCHEMY_KEY:', ALCHEMY_KEY);
-const provider = new ethers.JsonRpcProvider(`https://polygon-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`);
-const RPC_URL = `https://polygon-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`;
+const provider = new ethers.JsonRpcProvider(`https://base-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`);
+const RPC_URL = `https://base-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`;
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const apiKit = new SafeApiKit({
-    chainId: BigInt(137),
+    chainId: BigInt(8453),
   })
   
 const defaultClient = () =>
@@ -45,7 +45,7 @@ const id  = (mobileNumber: number) => `user:${mobileNumber}`
 
 const Tokens = {
         USDC : {
-            address: "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+            address: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
             decimals: 6
         },
         DEGEN :{
