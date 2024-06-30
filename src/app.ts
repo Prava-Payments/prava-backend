@@ -382,13 +382,22 @@ app.post('/api/instructions', async (req: Request, res: Response) => {
 // Define a POST endpoint
 // For sending updated State of the wallet
 app.post('/api/refresh', async (req: Request, res: Response) => {
+    const client = await getDefaultClient()
     const receivedData = req.body;
-    const mobileNumber = receivedData.mobileNumber;
+    const mobileNumber = receivedData.sender;
+    const sessionKey = receivedData.session;
+    const json = await client.get(id(mobileNumber))
+    const data = JSON.parse(json as string)
     // fetch address from the database
-
-    const addressU = receivedData.address;
-    const { address, Balance} = await update(addressU)
-    res.json({ forNumber: mobileNumber, address: address, balance: Balance,});
+    if(json !== null && sessionKey === data.session) {
+        const sessionString = data.session
+        const address = data.address
+        const {Balance} = await update(address)
+        res.send({deployedWallet: address, Balance: Balance, session: sessionString});
+    }else {
+        res.send({error: 'No wallet found or session expired'})
+    }
+    client.quit()
 });
 
 // Define the port to run the server on
