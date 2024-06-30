@@ -208,12 +208,13 @@ app.use(express.json());
 // Define a GET endpoint
 app.post('/api/instructions', async (req: Request, res: Response) => {
     const receivedData = req.body;
-    const mobileNumber = receivedData.sender;
+    const mobileNumber2 = receivedData.sender;
     const instructions = receivedData.instruction;
     const sessionKey = receivedData.session;
     const amount = receivedData.amount;
     const destination = receivedData.destination;
     const token = receivedData.token;
+    const mobileNumber = mobileNumber2.replace("+", "");
     const client = await getDefaultClient()
     console.log('Instructions:', instructions);
     if (instructions === 'signup') {
