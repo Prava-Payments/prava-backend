@@ -153,7 +153,7 @@ const recharge = async (address: string) => {
         value: ethers.parseEther('0.0002')
       }
     try {
-        await wallet.sendTransaction(transactionParameters)
+        (await wallet.sendTransaction(transactionParameters)).wait()
         return 1
     } catch (error) {
         console.error('Error:', error);
